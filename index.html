@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="ru" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkyHorizon — Валюта и прокачка GTA Online на FunPay</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Orbitron, Rajdhani, Inter & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&family=Orbitron:wght@600;700;800;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Orbitron', 'sans-serif'],
+                        rajdhani: ['Rajdhani', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        night: '#0a0b10',
+                        panel: '#10131c',
+                        neonCash: '#00ff88',
+                        neonPurple: '#a855f7',
+                        neonCyan: '#22d3ee',
+                        neonGold: '#fbbf24',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #0a0b10;
+            color: #f3f4f6;
+            overflow-x: hidden;
+        }
+
+        /* Неоновый фон ночного Лос-Сантоса */
+        .skyhorizon-bg {
+            background-image:
+                radial-gradient(circle at 15% 10%, rgba(0, 255, 136, 0.12) 0%, transparent 40%),
+                radial-gradient(circle at 85% 18%, rgba(168, 85, 247, 0.14) 0%, transparent 42%),
+                radial-gradient(circle at 50% 65%, rgba(34, 211, 238, 0.07) 0%, transparent 48%),
+                linear-gradient(180deg, #0a0b10 0%, #0d1019 50%, #0a0b10 100%);
+        }
+
+        /* Тонкая кибер-сетка */
+        .bg-cyber-grid {
+            background-size: 48px 48px;
+            background-image:
+                linear-gradient(to right, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+        }
+
+        /* Карточки товаров */
+        .lot-card {
+            background: linear-gradient(165deg, rgba(19, 23, 35, 0.88) 0%, rgba(11, 13, 20, 0.96) 100%);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.28s ease, box-shadow 0.28s ease;
+        }
+
+        .lot-card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(0, 255, 136, 0.45);
+            box-shadow: 0 22px 45px -15px rgba(0, 255, 136, 0.2);
+        }
+
+        /* Выделение карточки ХИТ ПРОДАЖ */
+        .lot-card.hit-card {
+            border-color: rgba(251, 191, 36, 0.45);
+            box-shadow: 0 20px 45px -15px rgba(251, 191, 36, 0.18);
+        }
+
+        .lot-card.hit-card:hover {
+            border-color: rgba(251, 191, 36, 0.85);
+            box-shadow: 0 26px 55px -12px rgba(251, 191, 36, 0.3);
+        }
+
+        /* Кнопка перехода на FunPay */
+        .btn-neon-cash {
+            background: linear-gradient(135deg, #00ff88 0%, #059669 100%);
+            color: #05080c;
+            box-shadow: 0 8px 24px -6px rgba(0, 255, 136, 0.45);
+            transition: all 0.2s ease;
+        }
+
+        .btn-neon-cash:hover {
+            background: linear-gradient(135deg, #4ade80 0%, #00ff88 100%);
+            box-shadow: 0 12px 30px -4px rgba(0, 255, 136, 0.65);
+            transform: translateY(-1px);
+        }
+
+        .btn-neon-cash:active {
+            transform: scale(0.98);
+        }
+
+        .btn-neon-gold {
+            background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+            color: #090b10;
+            box-shadow: 0 8px 24px -6px rgba(251, 191, 36, 0.45);
+        }
+
+        .btn-neon-gold:hover {
+            background: linear-gradient(135deg, #fde047 0%, #f59e0b 100%);
+            box-shadow: 0 12px 30px -4px rgba(251, 191, 36, 0.65);
+        }
+
+        /* Кастомный скроллбар */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0a0b10;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e2436;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #2f3852;
+        }
+    </style>
+</head>
+<body class="skyhorizon-bg bg-cyber-grid min-h-screen flex flex-col antialiased selection:bg-[#00ff88]/30 selection:text-[#00ff88]">
+
+    <!-- Всплывающее уведомление (Toast) -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2.5 max-w-sm w-[calc(100%-2.5rem)] pointer-events-none"></div>
+
+    <!-- Шапка сайта -->
+    <header class="sticky top-0 z-40 border-b border-white/[0.08] bg-[#0a0b10]/85 backdrop-blur-xl">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between gap-4">
+            <!-- Логотип SkyHorizon -->
+            <a href="#" class="flex items-center gap-3 group">
+                <div class="relative w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-br from-[#00ff88] via-cyan-400 to-purple-500 p-[1.5px] shadow-lg shadow-[#00ff88]/20">
+                    <div class="w-full h-full bg-[#0a0b10] rounded-[10.5px] flex items-center justify-center">
+                        <!-- Стилизованная эмблема горизонта и звезды -->
+                        <svg class="w-6 h-6 text-[#00ff88] group-hover:scale-110 transition-transform" viewBox="0 0 24 24" fill="none">
+                            <path d="M12 2L13.8 7.2L19 9L13.8 10.8L12 16L10.2 10.8L5 9L10.2 7.2L12 2Z" fill="currentColor"/>
+                            <path d="M2 18.5C5.5 16.5 9.2 15.5 12 15.5C14.8 15.5 18.5 16.5 22 18.5" stroke="#22d3ee" stroke-width="2" stroke-linecap="round"/>
+                            <path d="M4.5 21.5C7.2 20.3 9.8 19.8 12 19.8C14.2 19.8 16.8 20.3 19.5 21.5" stroke="#a855f7" stroke-width="1.6" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                </div>
+                <div>
+                    <div class="font-display font-extrabold text-lg sm:text-xl tracking-wider text-white leading-none">
+                        Sky<span class="text-transparent bg-clip-text bg-gradient-to-r from-[#00ff88] to-cyan-400">Horizon</span>
+                    </div>
+                    <div class="font-rajdhani text-[11px] sm:text-xs font-bold tracking-[0.18em] text-zinc-400 uppercase mt-0.5">
+                        GTA ONLINE BOOST &amp; CURRENCY
+                    </div>
+                </div>
+            </a>
+
+            <!-- Навигация (Десктоп) -->
+            <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-zinc-400">
+                <a href="#catalog" class="hover:text-[#00ff88] transition-colors">Каталог</a>
+                <a href="#how-it-works" class="hover:text-[#00ff88] transition-colors">Как купить</a>
+                <a href="#guarantees" class="hover:text-[#00ff88] transition-colors">Гарантии</a>
+            </nav>
+
+            <!-- Статус-бейдж FunPay -->
+            <div class="flex items-center gap-2.5">
+                <a href="#catalog" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-full bg-[#00ff88]/10 border border-[#00ff88]/30 text-xs font-semibold text-[#00ff88] hover:bg-[#00ff88]/15 transition-all">
+                    <span class="relative flex h-2 w-2">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00ff88] opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-[#00ff88]"></span>
+                    </span>
+                    <span class="hidden sm:inline">Онлайн • Быстрая выдача</span>
+                    <span class="sm:hidden">Онлайн</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Главный экран (Hero Section) -->
+    <section class="relative pt-10 pb-10 sm:pt-16 sm:pb-14 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+        <div class="text-center max-w-4xl mx-auto">
+            <!-- Бейдж версий -->
+            <div class="inline-flex flex-wrap items-center justify-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.04] border border-white/10 text-xs font-semibold tracking-wide mb-6">
+                <span class="px-2 py-0.5 rounded-full bg-[#00ff88] text-zinc-950 font-bold text-[10px] uppercase">Enhanced</span>
+                <span class="text-zinc-500">/</span>
+                <span class="px-2 py-0.5 rounded-full bg-amber-400 text-zinc-950 font-bold text-[10px] uppercase">Legacy</span>
+                <span class="text-zinc-300 pl-1">Актуальные версии GTA Online • Гарант FunPay</span>
+            </div>
+
+            <h1 class="font-display font-black text-3xl sm:text-5xl lg:text-6xl uppercase tracking-tight text-white leading-[1.1]">
+                ПРОКАЧКА И ВАЛЮТА В <br class="hidden sm:inline">
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#00ff88] via-cyan-300 to-purple-400">
+                    GTA ONLINE
+                </span>
+            </h1>
+
+            <p class="mt-5 text-sm sm:text-lg text-zinc-400 max-w-2xl mx-auto leading-relaxed">
+                Безопасное пополнение баланса, любой уровень <span class="text-white font-semibold">1–8000</span> и полная разблокировка контента для <span class="text-[#00ff88] font-medium">Enhanced</span> и <span class="text-amber-300 font-medium">Legacy</span> версий через гарант <span class="text-cyan-400 font-semibold">FunPay</span>.
+            </p>
+
+            <!-- Быстрые фильтры платформ прямо в Hero -->
+            <div class="mt-8 inline-flex flex-wrap items-center justify-center gap-2 p-1.5 rounded-2xl bg-[#10131c]/90 border border-white/10 shadow-xl" id="hero-platform-filters">
+                <button data-platform="all" class="filter-btn active px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all bg-[#00ff88] text-zinc-950 shadow-lg shadow-[#00ff88]/25">
+                    Все платформы
+                </button>
+                <button data-platform="Steam" class="filter-btn px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-zinc-300 hover:text-white hover:bg-white/5 transition-all flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-sky-400"></span>
+                    <span>Steam</span>
+                </button>
+                <button data-platform="Social Club" class="filter-btn px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-zinc-300 hover:text-white hover:bg-white/5 transition-all flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-orange-400"></span>
+                    <span>Social Club</span>
+                </button>
+                <button data-platform="Epic Games" class="filter-btn px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-zinc-300 hover:text-white hover:bg-white/5 transition-all flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-cyan-300"></span>
+                    <span>Epic Games</span>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Каталог товаров -->
+    <main id="catalog" class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 w-full">
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-8">
+            <div>
+                <div class="font-rajdhani text-xs font-bold uppercase tracking-[0.2em] text-[#00ff88]">
+                    Официальные лоты SkyHorizon
+                </div>
+                <h2 class="font-display text-2xl sm:text-3xl font-bold uppercase tracking-wide text-white mt-1">
+                    Каталог пакетов
+                </h2>
+            </div>
+            <div class="text-xs sm:text-sm text-zinc-400">
+                Показано лотов: <span id="visible-count" class="text-white font-mono font-bold">7</span>
+            </div>
+        </div>
+
+        <!-- Сетка 7 карточек -->
+        <div id="products-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Карточки рендерятся динамически -->
+        </div>
+    </main>
+
+    <!-- Секция: Как проходит сделка -->
+    <section id="how-it-works" class="border-t border-white/[0.08] bg-[#08090e]/90 py-16 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center max-w-2xl mx-auto mb-12">
+                <span class="font-rajdhani text-xs font-bold uppercase tracking-[0.22em] text-cyan-400">
+                    Прозрачный процесс
+                </span>
+                <h2 class="font-display text-2xl sm:text-4xl font-bold uppercase text-white mt-2">
+                    Как проходит сделка
+                </h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Шаг 1 -->
+                <div class="p-6 rounded-3xl bg-[#10131c]/70 border border-white/[0.08] relative overflow-hidden">
+                    <div class="w-11 h-11 rounded-2xl bg-[#00ff88]/15 border border-[#00ff88]/30 flex items-center justify-center text-[#00ff88] font-display font-bold text-lg mb-4">
+                        01
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">Выбор лота</h3>
+                    <p class="text-sm text-zinc-400 leading-relaxed">
+                        Выберите подходящий пакет валюты или полную разблокировку под вашу платформу (Steam, Social Club или Epic Games) и нажмите «Купить на FunPay».
+                    </p>
+                </div>
+
+                <!-- Шаг 2 -->
+                <div class="p-6 rounded-3xl bg-[#10131c]/70 border border-white/[0.08] relative overflow-hidden">
+                    <div class="w-11 h-11 rounded-2xl bg-cyan-500/15 border border-cyan-400/30 flex items-center justify-center text-cyan-400 font-display font-bold text-lg mb-4">
+                        02
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">Оплата через гарант FunPay</h3>
+                    <p class="text-sm text-zinc-400 leading-relaxed">
+                        Вы оплачиваете заказ удобным способом на FunPay. Биржа удерживает средства в безопасности до полного выполнения нашей работы.
+                    </p>
+                </div>
+
+                <!-- Шаг 3 -->
+                <div class="p-6 rounded-3xl bg-[#10131c]/70 border border-white/[0.08] relative overflow-hidden">
+                    <div class="w-11 h-11 rounded-2xl bg-purple-500/15 border border-purple-400/30 flex items-center justify-center text-purple-400 font-display font-bold text-lg mb-4">
+                        03
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">Получение и подтверждение</h3>
+                    <p class="text-sm text-zinc-400 leading-relaxed">
+                        За 10–15 минут мы начисляем GTA$, выставляем нужный уровень 1–8000 и открываем весь контент. Вы проверяете аккаунт и подтверждаете заказ.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Секция: Гарантии -->
+    <section id="guarantees" class="border-t border-white/[0.07] py-14 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="p-5 rounded-2xl bg-white/[0.025] border border-white/[0.07] flex items-start gap-3.5">
+                <div class="w-10 h-10 rounded-xl bg-[#00ff88]/15 text-[#00ff88] flex items-center justify-center shrink-0">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                </div>
+                <div>
+                    <div class="text-sm font-bold text-white">Защита FunPay</div>
+                    <div class="text-xs text-zinc-400 mt-1">Оплата переводится продавцу только после вашей проверки</div>
+                </div>
+            </div>
+
+            <div class="p-5 rounded-2xl bg-white/[0.025] border border-white/[0.07] flex items-start gap-3.5">
+                <div class="w-10 h-10 rounded-xl bg-cyan-500/15 text-cyan-400 flex items-center justify-center shrink-0">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                </div>
+                <div>
+                    <div class="text-sm font-bold text-white">Быстрый старт</div>
+                    <div class="text-xs text-zinc-400 mt-1">Среднее время выполнения заказа составляет 10–15 минут</div>
+                </div>
+            </div>
+
+            <div class="p-5 rounded-2xl bg-white/[0.025] border border-white/[0.07] flex items-start gap-3.5">
+                <div class="w-10 h-10 rounded-xl bg-amber-500/15 text-amber-400 flex items-center justify-center shrink-0">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                    </svg>
+                </div>
+                <div>
+                    <div class="text-sm font-bold text-white">Enhanced &amp; Legacy</div>
+                    <div class="text-xs text-zinc-400 mt-1">Полная совместимость со всеми актуальными изданиями</div>
+                </div>
+            </div>
+
+            <div class="p-5 rounded-2xl bg-white/[0.025] border border-white/[0.07] flex items-start gap-3.5">
+                <div class="w-10 h-10 rounded-xl bg-purple-500/15 text-purple-400 flex items-center justify-center shrink-0">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                </div>
+                <div>
+                    <div class="text-sm font-bold text-white">Безопасные методы</div>
+                    <div class="text-xs text-zinc-400 mt-1">Приватный софт с обходом античита и без риска</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Подвал сайта -->
+    <footer class="border-t border-white/[0.08] bg-[#06070b] py-8 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-500">
+            <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                <span class="font-display font-bold text-sm text-zinc-200 tracking-wider">SkyHorizon © 2026</span>
+                <span>•</span>
+                <span>Все сделки проводятся через официальный гарант FunPay</span>
+            </div>
+
+            <button id="open-link-manager-btn" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/[0.03] hover:bg-white/[0.08] border border-white/[0.08] text-zinc-400 hover:text-zinc-200 transition-colors">
+                <svg class="w-3.5 h-3.5 text-[#00ff88]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <span>Редактор ссылок</span>
+            </button>
+        </div>
+    </footer>
+
+    <!-- МОДАЛЬНОЕ ОКНО: РЕДАКТОР ССЫЛОК FUNPAY -->
+    <div id="link-manager-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+        <div class="bg-[#0e111a] border border-white/15 rounded-3xl w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+            <div class="px-6 py-4 border-b border-white/10 flex items-center justify-between gap-4 bg-[#131724]">
+                <div>
+                    <h3 class="font-display text-lg sm:text-xl font-bold uppercase tracking-wide text-white flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-[#00ff88]"></span>
+                        Редактор ссылок SkyHorizon
+                    </h3>
+                    <p class="text-xs text-zinc-400 mt-0.5">
+                        Все 7 ссылок на FunPay уже вшиты. Здесь можно изменить их и скачать обновлённый HTML-файл.
+                    </p>
+                </div>
+                <button id="close-modal-btn" class="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white transition-colors">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <div id="modal-inputs-list" class="p-6 overflow-y-auto space-y-3.5 flex-1">
+                <!-- Генерируется динамически -->
+            </div>
+
+            <div class="px-6 py-4 border-t border-white/10 bg-[#131724] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                <button id="download-html-btn" class="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-zinc-200 transition-all flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4 text-[#00ff88]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    <span>Скачать готовый HTML</span>
+                </button>
+
+                <button id="save-links-btn" class="px-5 py-2.5 rounded-xl btn-neon-cash text-xs sm:text-sm font-bold transition-all">
+                    Сохранить изменения
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * ============================================================================
+         * КАТАЛОГ ТОВАРОВ SKYHORIZON С ПРИВЯЗАННЫМИ ССЫЛКАМИ НА FUNPAY
+         * ============================================================================
+         */
+        const DEFAULT_PRODUCTS = [
+            {
+                id: 'lot-30m-steam',
+                platform: 'Steam',
+                badge: '',
+                isHit: false,
+                isFullPack: false,
+                title: '30.000.000 $ + Уровень 1–8000',
+                subtitle: 'ENHANCED / LEGACY • Разблокировка всего (Epic, Steam, SC)',
+                price: 280,
+                features: [
+                    'Валюта GTA$: 30.000.000 $ на счёт',
+                    'Любой уровень персонажа 1–8000',
+                    'Открытие тюнинга, оружия, тату и бункера'
+                ],
+                funpayUrl: 'https://funpay.com/lots/offer?id=40640418'
+            },
+            {
+                id: 'lot-75m-sc',
+                platform: 'Social Club',
+                badge: '',
+                isHit: false,
+                isFullPack: false,
+                title: '75.000.000 $ + Уровень 1–8000',
+                subtitle: 'ENHANCED / LEGACY • Разблокировка всего (Epic, Steam, SC)',
+                price: 340,
+                features: [
+                    'Валюта GTA$: 75.000.000 $ на счёт',
+                    'Любой уровень персонажа 1–8000',
+                    'Открытие тюнинга, оружия, тату и бункера'
+                ],
+                funpayUrl: 'https://funpay.com/lots/offer?id=40640415'
+            },
+            {
+                id: 'lot-100m-epic',
+                platform: 'Epic Games',
+                badge: 'ХИТ ПРОДАЖ',
+                isHit: true,
+                isFullPack: false,
+                title: '100.000.000 $ + Уровень 1–8000',
+                subtitle: 'ENHANCED / LEGACY • Разблокировка всего (Epic, Steam, SC)',
+                price: 380,
+                features: [
+                    'Валюта GTA$: 100.000.000 $ на счёт',
+                    'Любой уровень персонажа 1–8000',
+                    'Открытие тюнинга, оружия, тату и бункера'
+                ],
+                funpayUrl: 'https://funpay.com/lots/offer?id=36714486'
+            },
+            {
+                id: 'lot-150m-steam',
+                platform: 'Steam',
+                badge: '',
+                isHit: false,
+                isFullPack: false,
+                title: '150.000.000 $ + Уровень 1–8000',
+                subtitle: 'ENHANCED / LEGACY • Разблокировка всего (Epic, Steam, SC)',
+                price: 420,
+                features: [
+                    'Валюта GTA$: 150.000.000 $ на счёт',
+                    'Любой уровень персонажа 1–8000',
+                    'Открытие тюнинга, оружия, тату и бункера'
+                ],
+                funpayUrl: 'https://funpay.com/lots/offer?id=35859479'
+            },
+            {
+                id: 'lot-full-steam',
+                platform: 'Steam',
+                badge: 'ПОЛНЫЙ ПАКЕТ',
+                isHit: false,
+                isFullPack: true,
+                title: 'ДЕНЬГИ • УРОВЕНЬ • РАЗБЛОКИРОВКИ',
+                subtitle: 'ENHANCED / LEGACY • Полная разблокировка GTA Online (Steam)',
+                price: 490,
+                features: [
+                    'Валюта GTA$ в нужном объёме',
+                    'Любой уровень персонажа 1–8000',
+                    'Открытие тюнинга, оружия, тату и бункера'
+                ],
+                funpayUrl: 'https://funpay.com/lots/offer?id=64851332'
+            },
+            {
+                id: 'lot-full-sc',
+                platform: 'Social Club',
+                badge: 'ПОЛНЫЙ ПАКЕТ',
+                isHit: false,
+                isFullPack: true,
+                title: 'ДЕНЬГИ • УРОВЕНЬ • РАЗБЛОКИРОВКИ',
+                subtitle: 'ENHANCED / LEGACY • Полная разблокировка GTA Online (Social Club)',
+                price: 490,
+                features: [
+                    'Валюта GTA$ в нужном объёме',
+                    'Любой уровень персонажа 1–8000',
+                    'Открытие тюнинга, оружия, тату и бункера'
+                ],
+                funpayUrl: 'https://funpay.com/lots/offer?id=64204879'
+            },
+            {
+                id: 'lot-full-epic',
+                platform: 'Epic Games',
+                badge: 'ПОЛНЫЙ ПАКЕТ',
+                isHit: false,
+                isFullPack: true,
+                title: 'ДЕНЬГИ • УРОВЕНЬ • РАЗБЛОКИРОВКИ',
+                subtitle: 'ENHANCED / LEGACY • Полная разблокировка GTA Online (Epic Games)',
+                price: 490,
+                features: [
+                    'Валюта GTA$ в нужном объёме',
+                    'Любой уровень персонажа 1–8000',
+                    'Открытие тюнинга, оружия, тату и бункера'
+                ],
+                funpayUrl: 'https://funpay.com/lots/offer?id=40640420'
+            }
+        ];
+
+        const STORAGE_KEY = 'skyhorizon_funpay_links_v1';
+        let currentPlatformFilter = 'all';
+        let productsState = loadProducts();
+
+        function loadProducts() {
+            try {
+                const savedRaw = localStorage.getItem(STORAGE_KEY);
+                if (!savedRaw) return JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
+                const savedMap = JSON.parse(savedRaw);
+                return DEFAULT_PRODUCTS.map(item => ({
+                    ...item,
+                    funpayUrl: (savedMap[item.id] && savedMap[item.id].trim() !== '')
+                        ? savedMap[item.id].trim()
+                        : item.funpayUrl
+                }));
+            } catch (e) {
+                return JSON.parse(JSON.stringify(DEFAULT_PRODUCTS));
+            }
+        }
+
+        /**
+         * Бейдж платформы с цветовой кодировкой (Steam синий, Social Club оранжевый, Epic Games бело-голубой)
+         */
+        function getPlatformBadgeHTML(platform) {
+            if (platform === 'Steam') {
+                return `
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-sky-500/15 border border-sky-400/35 text-sky-300 text-xs font-bold">
+                        <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M11.979 0C5.678 0 .511 4.86.022 11.037l6.432 2.658c.545-.371 1.203-.59 1.912-.59.063 0 .125.004.188.006l2.861-4.142V8.91c0-2.495 2.028-4.524 4.524-4.524 2.494 0 4.524 2.031 4.524 4.527s-2.03 4.525-4.524 4.525h-.105l-4.076 2.911c0 .052.004.105.004.159 0 1.875-1.515 3.396-3.39 3.396-1.635 0-3.016-1.173-3.331-2.727L.436 15.27C1.862 20.307 6.486 24 11.979 24c6.627 0 11.999-5.373 11.999-12S18.605 0 11.979 0z"/></svg>
+                        <span>Steam</span>
+                    </span>
+                `;
+            }
+            if (platform === 'Social Club') {
+                return `
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-orange-500/15 border border-orange-400/35 text-orange-300 text-xs font-bold">
+                        <span class="font-display font-extrabold text-[11px] leading-none">R★</span>
+                        <span>Social Club</span>
+                    </span>
+                `;
+            }
+            return `
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-cyan-400/15 border border-cyan-300/35 text-cyan-100 text-xs font-bold">
+                    <svg class="w-3.5 h-3.5 fill-current text-cyan-300" viewBox="0 0 24 24"><path d="M3.537 0C2.165 0 1.66.506 1.66 1.879v15.424c0 1.077.386 1.663 1.494 2.138l7.84 3.314c.67.283 1.341.283 2.011 0l7.84-3.314c1.108-.475 1.495-1.061 1.495-2.138V1.879C22.34.506 21.835 0 20.463 0H3.537zm6.72 4.305h3.486v5.28h2.507L12 15.118 7.75 9.585h2.507v-5.28z"/></svg>
+                    <span>Epic Games</span>
+                </span>
+            `;
+        }
+
+        /**
+         * Отрисовка каталога товаров
+         */
+        function renderProducts() {
+            const grid = document.getElementById('products-grid');
+            const filtered = currentPlatformFilter === 'all'
+                ? productsState
+                : productsState.filter(p => p.platform === currentPlatformFilter);
+
+            const countEl = document.getElementById('visible-count');
+            if (countEl) countEl.textContent = filtered.length;
+
+            grid.innerHTML = filtered.map(product => {
+                const cardClass = product.isHit
+                    ? 'lot-card hit-card rounded-3xl p-6 flex flex-col justify-between relative overflow-hidden'
+                    : 'lot-card rounded-3xl p-6 flex flex-col justify-between relative overflow-hidden';
+
+                let badgeHTML = '';
+                if (product.isHit) {
+                    badgeHTML = `
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-400 to-amber-500 text-zinc-950 text-[11px] font-extrabold uppercase tracking-wider shadow-md shadow-amber-500/25">
+                            🔥 ${product.badge}
+                        </span>
+                    `;
+                } else if (product.isFullPack) {
+                    badgeHTML = `
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-purple-500/20 border border-purple-400/35 text-purple-200 text-[11px] font-bold uppercase tracking-wider">
+                            ★ ${product.badge}
+                        </span>
+                    `;
+                } else {
+                    badgeHTML = `
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#00ff88]/10 border border-[#00ff88]/25 text-[#00ff88] text-[10px] font-mono font-bold uppercase tracking-wider">
+                            ENHANCED / LEGACY
+                        </span>
+                    `;
+                }
+
+                const btnClass = product.isHit ? 'btn-neon-cash btn-neon-gold' : 'btn-neon-cash';
+                const titleColor = product.isHit
+                    ? 'text-amber-300'
+                    : (product.isFullPack ? 'text-white' : 'text-[#00ff88]');
+
+                return `
+                    <article class="${cardClass}">
+                        <!-- Верхняя неоновая линия -->
+                        <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent ${product.isHit ? 'via-amber-400/70' : 'via-[#00ff88]/45'} to-transparent"></div>
+
+                        <div>
+                            <!-- Шапка карточки: платформа + бейдж -->
+                            <div class="flex items-center justify-between gap-2 mb-5">
+                                ${getPlatformBadgeHTML(product.platform)}
+                                ${badgeHTML}
+                            </div>
+
+                            <!-- Заголовок и подзаголовок -->
+                            <div class="mb-5">
+                                <h3 class="font-display text-xl sm:text-2xl font-extrabold tracking-tight leading-snug ${titleColor}">
+                                    ${product.title}
+                                </h3>
+                                <p class="text-xs text-zinc-400 mt-1.5 leading-relaxed">
+                                    ${product.subtitle}
+                                </p>
+                            </div>
+
+                            <!-- Список включений -->
+                            <ul class="space-y-2.5 mb-7 pt-4 border-t border-white/[0.08]">
+                                ${product.features.map(feat => `
+                                    <li class="flex items-start gap-2.5 text-xs sm:text-sm text-zinc-300">
+                                        <svg class="w-4 h-4 text-[#00ff88] shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                        <span>${feat}</span>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        </div>
+
+                        <!-- Низ карточки: Цена и прямая ссылка на FunPay -->
+                        <div class="pt-4 border-t border-white/[0.08] flex items-center justify-between gap-3">
+                            <div>
+                                <div class="text-[11px] text-zinc-500 font-medium">Цена на FunPay</div>
+                                <div class="font-display text-2xl sm:text-3xl font-extrabold text-white">
+                                    ${product.price} <span class="text-lg text-zinc-400 font-sans font-semibold">₽</span>
+                                </div>
+                            </div>
+
+                            <a
+                                href="${product.funpayUrl}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="${btnClass} px-4 py-3 rounded-2xl font-bold text-xs sm:text-sm inline-flex items-center gap-1.5 shrink-0"
+                            >
+                                <span>Купить на FunPay ↗</span>
+                            </a>
+                        </div>
+                    </article>
+                `;
+            }).join('');
+        }
+
+        /**
+         * Всплывающее уведомление
+         */
+        function showToast(message) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'pointer-events-auto p-3.5 rounded-2xl bg-[#131724]/95 backdrop-blur-xl border border-[#00ff88]/40 shadow-2xl text-xs sm:text-sm text-zinc-100 flex items-center justify-between gap-3 transition-all duration-300 translate-y-2 opacity-0';
+            toast.innerHTML = `
+                <div class="flex items-center gap-2.5">
+                    <span class="w-2 h-2 rounded-full bg-[#00ff88] shrink-0"></span>
+                    <span>${message}</span>
+                </div>
+                <button class="text-zinc-500 hover:text-white" onclick="this.parentElement.remove()">✕</button>
+            `;
+            container.appendChild(toast);
+            requestAnimationFrame(() => toast.classList.remove('translate-y-2', 'opacity-0'));
+            setTimeout(() => {
+                if (toast.parentElement) {
+                    toast.classList.add('opacity-0', 'translate-y-2');
+                    setTimeout(() => toast.remove(), 300);
+                }
+            }, 4000);
+        }
+
+        /**
+         * Модальное окно редактора ссылок
+         */
+        function openLinkManager() {
+            const modal = document.getElementById('link-manager-modal');
+            const list = document.getElementById('modal-inputs-list');
+
+            list.innerHTML = productsState.map(product => `
+                <div class="p-3.5 rounded-2xl bg-white/[0.03] border border-white/[0.08] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div class="min-w-[220px]">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-bold text-white">${product.platform}</span>
+                            <span class="text-[11px] font-mono text-[#00ff88]">${product.price} ₽</span>
+                        </div>
+                        <div class="text-xs text-zinc-400 mt-0.5 truncate max-w-[240px]">
+                            ${product.title}
+                        </div>
+                    </div>
+
+                    <div class="flex-1">
+                        <input
+                            type="url"
+                            data-product-input="${product.id}"
+                            value="${product.funpayUrl}"
+                            class="w-full px-3.5 py-2 rounded-xl bg-[#08090e] border border-white/15 focus:border-[#00ff88] focus:outline-none text-xs sm:text-sm text-white font-mono transition-colors"
+                        />
+                    </div>
+                </div>
+            `).join('');
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeLinkManager() {
+            const modal = document.getElementById('link-manager-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function saveLinksFromModal() {
+            const inputs = document.querySelectorAll('#modal-inputs-list input[data-product-input]');
+            const mapToSave = {};
+            inputs.forEach(input => {
+                const id = input.dataset.productInput;
+                const val = input.value.trim();
+                mapToSave[id] = val;
+                const target = productsState.find(p => p.id === id);
+                if (target && val) target.funpayUrl = val;
+            });
+
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(mapToSave));
+            } catch (e) {}
+
+            renderProducts();
+            closeLinkManager();
+            showToast('Ссылки на лоты FunPay обновлены!');
+        }
+
+        function downloadStandaloneHTML() {
+            const inputs = document.querySelectorAll('#modal-inputs-list input[data-product-input]');
+            const updatedProducts = JSON.parse(JSON.stringify(productsState));
+            inputs.forEach(input => {
+                const target = updatedProducts.find(p => p.id === input.dataset.productInput);
+                if (target && input.value.trim()) target.funpayUrl = input.value.trim();
+            });
+
+            let fullHtml = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+            const pattern = /const DEFAULT_PRODUCTS = \[[\s\S]*?\];/;
+            const replacement = `const DEFAULT_PRODUCTS = ${JSON.stringify(updatedProducts, null, 12)};`;
+
+            if (pattern.test(fullHtml)) {
+                fullHtml = fullHtml.replace(pattern, replacement);
+            }
+
+            const blob = new Blob([fullHtml], { type: 'text/html;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'skyhorizon-gta.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            showToast('Готовый HTML-файл SkyHorizon скачан!');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderProducts();
+
+            // Фильтрация по платформам
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    currentPlatformFilter = btn.dataset.platform;
+                    document.querySelectorAll('.filter-btn').forEach(b => {
+                        if (b === btn) {
+                            b.className = 'filter-btn active px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all bg-[#00ff88] text-zinc-950 shadow-lg shadow-[#00ff88]/25';
+                        } else {
+                            b.className = 'filter-btn px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-zinc-300 hover:text-white hover:bg-white/5 transition-all flex items-center gap-2';
+                        }
+                    });
+                    renderProducts();
+                });
+            });
+
+            document.getElementById('open-link-manager-btn').addEventListener('click', openLinkManager);
+            document.getElementById('close-modal-btn').addEventListener('click', closeLinkManager);
+            document.getElementById('save-links-btn').addEventListener('click', saveLinksFromModal);
+            document.getElementById('download-html-btn').addEventListener('click', downloadStandaloneHTML);
+
+            document.getElementById('link-manager-modal').addEventListener('click', (e) => {
+                if (e.target.id === 'link-manager-modal') closeLinkManager();
+            });
+        });
+    </script>
+</body>
+</html>
